@@ -18,8 +18,8 @@ type Cors struct {
 func New() *Cors {
 	return &Cors{
 		origin:            flag.String("cors.origin", "*", "allowed origin(s). if the value is 'ALL', the value of the origin header on the request will be use"),
-		headers:           flag.String("cors.allowedh", "", "a comma-separated lists of headers to be allowed"),
-		handleOptionsFlag: flag.Bool("cors.handleo", true, "return early when processing OPTIONS requests"),
+		headers:           flag.String("cors.headers", "", "a comma-separated lists of headers to be allowed"),
+		handleOptionsFlag: flag.Bool("cors.intercept-options", true, "return early when processing OPTIONS requests"),
 	}
 }
 
