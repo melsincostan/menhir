@@ -45,7 +45,9 @@ func (c *Cors) Init() (err error) {
 func (c *Cors) ServeHTTP(rw http.ResponseWriter, req *menhir.Request) {
 	if c.handleOptions && req.Request.Method == http.MethodOptions {
 		req.Done()
-		rw.Header().Add("Access-Control-Allowed-Headers", *c.headers)
+		if *c.headers != "" {
+			rw.Header().Add("Access-Control-Allowed-Headers", *c.headers)
+		}
 		rw.Header().Add("Access-Control-Allow-Origin", c.originFunc(req.Request))
 		rw.WriteHeader(http.StatusNoContent)
 	}
@@ -54,7 +56,9 @@ func (c *Cors) ServeHTTP(rw http.ResponseWriter, req *menhir.Request) {
 func (c *Cors) Rewrite(req *httputil.ProxyRequest) {}
 
 func (c *Cors) ModifyResponse(res *http.Response) (err error) {
-	res.Header.Add("Access-Control-Allowed-Headers", *c.headers)
+	if *c.headers != "" {
+		res.Header.Add("Access-Control-Allowed-Headers", *c.headers)
+	}
 	res.Header.Add("Access-Control-Allow-Origin", c.originFunc(res.Request))
 	return
 }
