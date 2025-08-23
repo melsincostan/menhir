@@ -16,11 +16,12 @@ var (
 )
 
 type Wrapper struct {
-	destination *url.URL
-	modules     map[string]ModuleBase
-	handlers    []Handler
-	rewriters   []Rewriter
-	proxy       *httputil.ReverseProxy
+	destination    *url.URL
+	modules        map[string]ModuleBase
+	handlers       []Handler
+	rewriters      []Rewriter
+	proxy          *httputil.ReverseProxy
+	requestCounter int64
 }
 
 func New() (w *Wrapper) {
@@ -42,7 +43,7 @@ func (w *Wrapper) Register(mod ModuleBase) (err error) {
 func (w *Wrapper) Init(destination string) (err error) {
 	parsedDestination, err := url.Parse(destination)
 	if err != nil {
-		return fmt.Errorf("destination '%s' could not be parsed: %w", err)
+		return fmt.Errorf("destination '%s' could not be parsed: %w", destination, err)
 	}
 	w.destination = parsedDestination
 	w.proxy = &httputil.ReverseProxy{
@@ -103,6 +104,7 @@ func (w *Wrapper) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	for _, handler := range w.handlers {
 		handler.ServeHTTP(rw, wrappedRequest)
 		if wrappedRequest.done {
+			log.Printf("Request done early, not passing through the reverse proxy!")
 			return
 		}
 	}
