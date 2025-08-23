@@ -9,6 +9,7 @@ type ModuleBase interface {
 	Name() string
 	Init() error
 	Priority() *int
+	Default() bool
 }
 
 type Handler interface {

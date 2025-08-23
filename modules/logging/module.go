@@ -18,6 +18,10 @@ func (l *Logging) Priority() *int {
 	return &prio
 }
 
+func (l *Logging) Default() bool {
+	return true
+}
+
 func (l *Logging) Init() (err error) {
 	return
 }

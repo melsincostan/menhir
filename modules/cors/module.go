@@ -31,6 +31,10 @@ func (c *Cors) Priority() *int {
 	return nil
 }
 
+func (c *Cors) Default() bool {
+	return false
+}
+
 func (c *Cors) Init() (err error) {
 	if *c.origin == "ALL" {
 		c.originFunc = func(r *http.Request) string {

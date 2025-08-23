@@ -34,6 +34,14 @@ func New() (w *Wrapper) {
 	}
 }
 
+func (w *Wrapper) Modules() (mlist []ModuleBase) {
+	mlist = []ModuleBase{}
+	for _, mod := range w.modules {
+		mlist = append(mlist, mod)
+	}
+	return
+}
+
 func (w *Wrapper) Register(mods ...ModuleBase) (err error) {
 	for _, mod := range mods {
 		if _, ok := w.modules[mod.Name()]; ok {
