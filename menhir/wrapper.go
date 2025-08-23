@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	ErrDuplicateModule = errors.New("a module with this name was already registered")
-	ErrModuleUnusable  = errors.New("provided module doesn't match any known interface and won't be used")
+	ErrDuplicateModule    = errors.New("a module with this name was already registered")
+	ErrModuleUnusable     = errors.New("provided module doesn't match any known interface and won't be used")
+	ErrUnregisteredModule = errors.New("no module was registered with this name")
 )
 
 type Wrapper struct {
@@ -58,11 +59,10 @@ func (w *Wrapper) Init(destination string) (err error) {
 	return
 }
 
-func (w *Wrapper) Enable(mod ModuleBase) (err error) {
-	if _, ok := w.modules[mod.Name()]; !ok {
-		if err := w.Register(mod); err != nil {
-			return err
-		}
+func (w *Wrapper) Enable(mname string) (err error) {
+	mod, ok := w.modules[mname]
+	if !ok {
+		return fmt.Errorf("module %s: %w", ErrUnregisteredModule)
 	}
 
 	if err := mod.Init(); err != nil {
