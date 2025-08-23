@@ -10,14 +10,16 @@ import (
 	"github.com/melsincostan/menhir/menhir"
 	"github.com/melsincostan/menhir/modules/cors"
 	"github.com/melsincostan/menhir/modules/logging"
+	"github.com/melsincostan/menhir/modules/xffor"
 )
 
 func main() {
 	destination := flag.String("destination", "localhost", "reverse proxy target")
 	host := flag.String("host", "0.0.0.0", "host on which the reverse proxy will listen")
 	port := flag.String("port", "8080", "port on which the reverse proxy will listen")
+
 	wrapper := menhir.New()
-	wrapper.Register(cors.New(), &logging.Logging{})
+	wrapper.Register(cors.New(), &logging.Logging{}, xffor.New())
 
 	modEnableArgs := map[string]*bool{}
 
