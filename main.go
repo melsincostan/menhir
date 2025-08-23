@@ -17,8 +17,7 @@ func main() {
 	host := flag.String("host", "0.0.0.0", "host on which the reverse proxy will listen")
 	port := flag.String("port", "8080", "port on which the reverse proxy will listen")
 	wrapper := menhir.New()
-	logger := logging.New()
-	wrapper.Register(corsModule, logger)
+	wrapper.Register(corsModule, &logging.Logging{})
 
 	flag.Parse()
 

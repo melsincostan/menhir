@@ -9,10 +9,6 @@ import (
 
 type Logging struct{}
 
-func New() *Logging {
-	return &Logging{}
-}
-
 func (l *Logging) Name() string {
 	return "logging"
 }
