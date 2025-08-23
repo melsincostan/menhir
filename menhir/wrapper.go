@@ -3,6 +3,7 @@ package menhir
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -23,7 +24,11 @@ type Wrapper struct {
 }
 
 func New() (w *Wrapper) {
-	return &Wrapper{}
+	return &Wrapper{
+		modules:   map[string]ModuleBase{},
+		handlers:  []Handler{},
+		rewriters: []Rewriter{},
+	}
 }
 
 func (w *Wrapper) Register(mod ModuleBase) (err error) {
@@ -37,7 +42,7 @@ func (w *Wrapper) Register(mod ModuleBase) (err error) {
 func (w *Wrapper) Init(destination string) (err error) {
 	parsedDestination, err := url.Parse(destination)
 	if err != nil {
-		return fmt.Errorf("destination '%s' could not be parsed: %w", err.Error())
+		return fmt.Errorf("destination '%s' could not be parsed: %w", err)
 	}
 	w.destination = parsedDestination
 	w.proxy = &httputil.ReverseProxy{
@@ -62,7 +67,7 @@ func (w *Wrapper) Init(destination string) (err error) {
 func (w *Wrapper) Enable(mname string) (err error) {
 	mod, ok := w.modules[mname]
 	if !ok {
-		return fmt.Errorf("module %s: %w", ErrUnregisteredModule)
+		return fmt.Errorf("module %s: %w", mname, ErrUnregisteredModule)
 	}
 
 	if err := mod.Init(); err != nil {
@@ -72,11 +77,13 @@ func (w *Wrapper) Enable(mname string) (err error) {
 	used := false
 	if hm, ok := mod.(Handler); ok {
 		used = true
+		log.Printf("registering module %s as handler", mname)
 		w.handlers = append(w.handlers, hm)
 	}
 
 	if rm, ok := mod.(Rewriter); ok {
 		used = true
+		log.Printf("registering module %s as rewriter", mname)
 		w.rewriters = append(w.rewriters, rm)
 	}
 
