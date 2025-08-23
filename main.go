@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	destination := flag.String("destination", "localhost", "reverse proxy target")
+	destination := flag.String("destination", "http://localhost", "reverse proxy target")
 	host := flag.String("host", "0.0.0.0", "host on which the reverse proxy will listen")
 	port := flag.String("port", "8080", "port on which the reverse proxy will listen")
 	listModules := flag.Bool("list-modules", false, "list all registered modules")
