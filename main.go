@@ -18,13 +18,11 @@ func main() {
 	port := flag.String("port", "8080", "port on which the reverse proxy will listen")
 	wrapper := menhir.New()
 	logger := logging.New()
-	wrapper.Register(corsModule)
-	wrapper.Register(logger)
+	wrapper.Register(corsModule, logger)
 
 	flag.Parse()
 
-	wrapper.Enable("cors")
-	wrapper.Enable("logging")
+	wrapper.Enable("cors", "logging")
 
 	if err := wrapper.Init(*destination); err != nil {
 		log.Fatalf("Could not start: %s", err.Error())

@@ -34,11 +34,13 @@ func New() (w *Wrapper) {
 	}
 }
 
-func (w *Wrapper) Register(mod ModuleBase) (err error) {
-	if _, ok := w.modules[mod.Name()]; ok {
-		return fmt.Errorf("module %s: %w", mod.Name(), ErrDuplicateModule)
+func (w *Wrapper) Register(mods ...ModuleBase) (err error) {
+	for _, mod := range mods {
+		if _, ok := w.modules[mod.Name()]; ok {
+			return fmt.Errorf("module %s: %w", mod.Name(), ErrDuplicateModule)
+		}
+		w.modules[mod.Name()] = mod
 	}
-	w.modules[mod.Name()] = mod
 	return
 }
 
@@ -73,39 +75,40 @@ func (w *Wrapper) Init(destination string) (err error) {
 	return
 }
 
-func (w *Wrapper) Enable(mname string) (err error) {
-	mod, ok := w.modules[mname]
-	if !ok {
-		return fmt.Errorf("module %s: %w", mname, ErrUnregisteredModule)
-	}
+func (w *Wrapper) Enable(mnames ...string) (err error) {
+	for _, mname := range mnames {
+		mod, ok := w.modules[mname]
+		if !ok {
+			return fmt.Errorf("module %s: %w", mname, ErrUnregisteredModule)
+		}
 
-	if err := mod.Init(); err != nil {
-		return fmt.Errorf("module %s could not be initialized: %w", mod.Name(), err)
-	}
+		if err := mod.Init(); err != nil {
+			return fmt.Errorf("module %s could not be initialized: %w", mod.Name(), err)
+		}
 
-	used := false
-	if hm, ok := mod.(Handler); ok {
-		used = true
-		log.Printf("registering module %s as handler", mname)
-		w.handlers = append(w.handlers, hm)
-	}
+		used := false
+		if hm, ok := mod.(Handler); ok {
+			used = true
+			log.Printf("registering module %s as handler", mname)
+			w.handlers = append(w.handlers, hm)
+		}
 
-	if rm, ok := mod.(Rewriter); ok {
-		used = true
-		log.Printf("registering module %s as rewriter", mname)
-		w.rewriters = append(w.rewriters, rm)
-	}
+		if rm, ok := mod.(Rewriter); ok {
+			used = true
+			log.Printf("registering module %s as rewriter", mname)
+			w.rewriters = append(w.rewriters, rm)
+		}
 
-	if rm, ok := mod.(Responder); ok {
-		used = true
-		log.Printf("registering module %s as responder", mname)
-		w.responders = append(w.responders, rm)
-	}
+		if rm, ok := mod.(Responder); ok {
+			used = true
+			log.Printf("registering module %s as responder", mname)
+			w.responders = append(w.responders, rm)
+		}
 
-	if !used {
-		return fmt.Errorf("module %s: %w", mod.Name(), ErrModuleUnusable)
+		if !used {
+			return fmt.Errorf("module %s: %w", mod.Name(), ErrModuleUnusable)
+		}
 	}
-
 	return
 }
 
