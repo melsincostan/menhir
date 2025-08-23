@@ -17,6 +17,11 @@ func (l *Logging) Name() string {
 	return "logging"
 }
 
+func (l *Logging) Priority() *int {
+	prio := 0
+	return &prio
+}
+
 func (l *Logging) Init() (err error) {
 	return
 }

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"slices"
 )
 
 var (
@@ -42,6 +43,12 @@ func (w *Wrapper) Register(mod ModuleBase) (err error) {
 }
 
 func (w *Wrapper) Init(destination string) (err error) {
+	// sort modules by priority
+	// higher priority handlers should handle first, do modifications / rewrites last
+	slices.SortFunc(w.handlers, sortFunc[Handler](true))      // higher priority first
+	slices.SortFunc(w.rewriters, sortFunc[Rewriter](false))   // higher priority last
+	slices.SortFunc(w.responders, sortFunc[Responder](false)) // higher priority last
+
 	parsedDestination, err := url.Parse(destination)
 	if err != nil {
 		return fmt.Errorf("destination '%s' could not be parsed: %w", destination, err)

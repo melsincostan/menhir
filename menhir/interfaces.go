@@ -8,6 +8,7 @@ import (
 type ModuleBase interface {
 	Name() string
 	Init() error
+	Priority() *int
 }
 
 type Handler interface {
