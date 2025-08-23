@@ -8,6 +8,7 @@ import (
 
 	"github.com/melsincostan/menhir/menhir"
 	"github.com/melsincostan/menhir/modules/cors"
+	"github.com/melsincostan/menhir/modules/logging"
 )
 
 func main() {
@@ -16,12 +17,14 @@ func main() {
 	host := flag.String("host", "0.0.0.0", "host on which the reverse proxy will listen")
 	port := flag.String("port", "8080", "port on which the reverse proxy will listen")
 	wrapper := menhir.New()
-
+	logger := logging.New()
 	wrapper.Register(corsModule)
+	wrapper.Register(logger)
 
 	flag.Parse()
 
 	wrapper.Enable("cors")
+	wrapper.Enable("logging")
 
 	if err := wrapper.Init(*destination); err != nil {
 		log.Fatalf("Could not start: %s", err.Error())
