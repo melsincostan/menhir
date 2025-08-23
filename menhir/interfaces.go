@@ -18,5 +18,9 @@ type Handler interface {
 type Rewriter interface {
 	ModuleBase
 	Rewrite(req *httputil.ProxyRequest)
+}
+
+type Responder interface {
+	ModuleBase
 	ModifyResponse(res *http.Response) error
 }

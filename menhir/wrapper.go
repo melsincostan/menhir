@@ -20,6 +20,7 @@ type Wrapper struct {
 	modules        map[string]ModuleBase
 	handlers       []Handler
 	rewriters      []Rewriter
+	responders     []Responder
 	proxy          *httputil.ReverseProxy
 	requestCounter int64
 }
@@ -54,8 +55,8 @@ func (w *Wrapper) Init(destination string) (err error) {
 			}
 		},
 		ModifyResponse: func(r *http.Response) (err error) {
-			for _, rewriter := range w.rewriters {
-				if err := rewriter.ModifyResponse(r); err != nil {
+			for _, responder := range w.responders {
+				if err := responder.ModifyResponse(r); err != nil {
 					return err
 				}
 			}
@@ -86,6 +87,12 @@ func (w *Wrapper) Enable(mname string) (err error) {
 		used = true
 		log.Printf("registering module %s as rewriter", mname)
 		w.rewriters = append(w.rewriters, rm)
+	}
+
+	if rm, ok := mod.(Responder); ok {
+		used = true
+		log.Printf("registering module %s as responder", mname)
+		w.responders = append(w.responders, rm)
 	}
 
 	if !used {

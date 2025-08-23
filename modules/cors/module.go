@@ -3,7 +3,6 @@ package cors
 import (
 	"flag"
 	"net/http"
-	"net/http/httputil"
 
 	"github.com/melsincostan/menhir/menhir"
 )
@@ -52,8 +51,6 @@ func (c *Cors) ServeHTTP(rw http.ResponseWriter, req *menhir.Request) {
 		rw.WriteHeader(http.StatusNoContent)
 	}
 }
-
-func (c *Cors) Rewrite(req *httputil.ProxyRequest) {}
 
 func (c *Cors) ModifyResponse(res *http.Response) (err error) {
 	if *c.headers != "" {
