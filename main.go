@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 
 	"github.com/melsincostan/menhir/menhir"
 	"github.com/melsincostan/menhir/modules/cors"
@@ -17,6 +18,7 @@ func main() {
 	destination := flag.String("destination", "localhost", "reverse proxy target")
 	host := flag.String("host", "0.0.0.0", "host on which the reverse proxy will listen")
 	port := flag.String("port", "8080", "port on which the reverse proxy will listen")
+	listModules := flag.Bool("list-modules", false, "list all registered modules")
 
 	wrapper := menhir.New()
 	wrapper.Register(cors.New(), &logging.Logging{}, xffor.New())
@@ -28,6 +30,14 @@ func main() {
 	}
 
 	flag.Parse()
+
+	if *listModules {
+		fmt.Print("Registered modules:\n")
+		for _, mod := range wrapper.Modules() {
+			fmt.Printf("- %s\n", mod.Name())
+		}
+		os.Exit(0)
+	}
 
 	for mname, enabled := range modEnableArgs {
 		if *enabled {
