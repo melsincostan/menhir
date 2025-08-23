@@ -21,6 +21,10 @@ type Wrapper struct {
 	proxy       *httputil.ReverseProxy
 }
 
+func New() (w *Wrapper) {
+	return &Wrapper{}
+}
+
 func (w *Wrapper) Register(mod ModuleBase) (err error) {
 	if _, ok := w.modules[mod.Name()]; ok {
 		return fmt.Errorf("module %s: %w", mod.Name(), ErrDuplicateModule)
@@ -29,7 +33,12 @@ func (w *Wrapper) Register(mod ModuleBase) (err error) {
 	return
 }
 
-func (w *Wrapper) Init() {
+func (w *Wrapper) Init(destination string) (err error) {
+	parsedDestination, err := url.Parse(destination)
+	if err != nil {
+		return fmt.Errorf("destination '%s' could not be parsed: %w", err.Error())
+	}
+	w.destination = parsedDestination
 	w.proxy = &httputil.ReverseProxy{
 		Rewrite: func(pr *httputil.ProxyRequest) {
 			pr.SetURL(w.destination)
@@ -46,6 +55,7 @@ func (w *Wrapper) Init() {
 			return
 		},
 	}
+	return
 }
 
 func (w *Wrapper) Enable(mod ModuleBase) (err error) {
