@@ -44,37 +44,6 @@ func (w *Wrapper) Register(mods ...ModuleBase) (err error) {
 	return
 }
 
-func (w *Wrapper) Init(destination string) (err error) {
-	// sort modules by priority
-	// higher priority handlers should handle first, do modifications / rewrites last
-	slices.SortFunc(w.handlers, sortFunc[Handler](true))      // higher priority first
-	slices.SortFunc(w.rewriters, sortFunc[Rewriter](false))   // higher priority last
-	slices.SortFunc(w.responders, sortFunc[Responder](false)) // higher priority last
-
-	parsedDestination, err := url.Parse(destination)
-	if err != nil {
-		return fmt.Errorf("destination '%s' could not be parsed: %w", destination, err)
-	}
-	w.destination = parsedDestination
-	w.proxy = &httputil.ReverseProxy{
-		Rewrite: func(pr *httputil.ProxyRequest) {
-			pr.SetURL(w.destination)
-			for _, rewriter := range w.rewriters {
-				rewriter.Rewrite(pr)
-			}
-		},
-		ModifyResponse: func(r *http.Response) (err error) {
-			for _, responder := range w.responders {
-				if err := responder.ModifyResponse(r); err != nil {
-					return err
-				}
-			}
-			return
-		},
-	}
-	return
-}
-
 func (w *Wrapper) Enable(mnames ...string) (err error) {
 	for _, mname := range mnames {
 		mod, ok := w.modules[mname]
@@ -108,6 +77,37 @@ func (w *Wrapper) Enable(mnames ...string) (err error) {
 		if !used {
 			return fmt.Errorf("module %s: %w", mod.Name(), ErrModuleUnusable)
 		}
+	}
+	return
+}
+
+func (w *Wrapper) Init(destination string) (err error) {
+	// sort modules by priority
+	// higher priority handlers should handle first, do modifications / rewrites last
+	slices.SortFunc(w.handlers, sortFunc[Handler](true))      // higher priority first
+	slices.SortFunc(w.rewriters, sortFunc[Rewriter](false))   // higher priority last
+	slices.SortFunc(w.responders, sortFunc[Responder](false)) // higher priority last
+
+	parsedDestination, err := url.Parse(destination)
+	if err != nil {
+		return fmt.Errorf("destination '%s' could not be parsed: %w", destination, err)
+	}
+	w.destination = parsedDestination
+	w.proxy = &httputil.ReverseProxy{
+		Rewrite: func(pr *httputil.ProxyRequest) {
+			pr.SetURL(w.destination)
+			for _, rewriter := range w.rewriters {
+				rewriter.Rewrite(pr)
+			}
+		},
+		ModifyResponse: func(r *http.Response) (err error) {
+			for _, responder := range w.responders {
+				if err := responder.ModifyResponse(r); err != nil {
+					return err
+				}
+			}
+			return
+		},
 	}
 	return
 }
