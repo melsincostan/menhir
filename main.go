@@ -11,6 +11,7 @@ import (
 	"github.com/melsincostan/menhir/menhir"
 	"github.com/melsincostan/menhir/modules/cors"
 	"github.com/melsincostan/menhir/modules/logging"
+	"github.com/melsincostan/menhir/modules/setua"
 	"github.com/melsincostan/menhir/modules/xffor"
 )
 
@@ -21,7 +22,7 @@ func main() {
 	listModules := flag.Bool("list-modules", false, "list all registered modules")
 
 	wrapper := menhir.New()
-	wrapper.Register(cors.New(), &logging.Logging{}, xffor.New())
+	wrapper.Register(cors.New(), &logging.Logging{}, xffor.New(), setua.New())
 
 	modEnableArgs := map[string]*bool{}
 
