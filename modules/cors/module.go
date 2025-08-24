@@ -62,52 +62,36 @@ func (c *Cors) Init() (err error) {
 func (c *Cors) ServeHTTP(rw http.ResponseWriter, req *menhir.Request) {
 	if c.handleOptions && req.Request.Method == http.MethodOptions {
 		req.Done()
-		if *c.allowedHeaders != "" {
-			rw.Header().Add("Access-Control-Allowed-Headers", *c.allowedHeaders)
-		}
-
-		if *c.exposedHeaders != "" {
-			rw.Header().Add("Access-Control-Expose-Headers", *c.exposedHeaders)
-		}
-
-		if *c.preflightMaxAge != 0*time.Second {
-			rw.Header().Add("Access-Control-Max-Age", fmt.Sprintf("%.0f", c.preflightMaxAge.Seconds()))
-		}
-
-		if *c.allowCredentials {
-			rw.Header().Add("Access-Control-Allow-Credentials", "true")
-		}
-
-		if *c.allowedMethods != "" {
-			rw.Header().Add("Access-Control-Allow-Methods", *c.allowedMethods)
-		}
-
-		rw.Header().Add("Access-Control-Allow-Origin", c.originFunc(req.Request))
+		c.headers(rw.Header(), req.Request)
 		rw.WriteHeader(http.StatusNoContent)
 	}
 }
 
 func (c *Cors) ModifyResponse(res *http.Response) (err error) {
+	c.headers(res.Header, res.Request)
+	return
+}
+
+func (c *Cors) headers(h http.Header, r *http.Request) {
 	if *c.allowedHeaders != "" {
-		res.Header.Add("Access-Control-Allowed-Headers", *c.allowedHeaders)
+		h.Set("Access-Control-Allowed-Headers", *c.allowedHeaders)
 	}
 
 	if *c.exposedHeaders != "" {
-		res.Header.Add("Access-Control-Expose-Headers", *c.exposedHeaders)
+		h.Set("Access-Control-Expose-Headers", *c.exposedHeaders)
 	}
 
 	if *c.preflightMaxAge != 0*time.Second {
-		res.Header.Add("Access-Control-Max-Age", fmt.Sprintf("%.0f", c.preflightMaxAge.Seconds()))
+		h.Set("Access-Control-Max-Age", fmt.Sprintf("%.0f", c.preflightMaxAge.Seconds()))
 	}
 
 	if *c.allowCredentials {
-		res.Header.Add("Access-Control-Allow-Credentials", "true")
+		h.Set("Access-Control-Allow-Credentials", "true")
 	}
 
 	if *c.allowedMethods != "" {
-		res.Header.Add("Access-Control-Allow-Methods", *c.allowedMethods)
+		h.Set("Access-Control-Allow-Methods", *c.allowedMethods)
 	}
 
-	res.Header.Add("Access-Control-Allow-Origin", c.originFunc(res.Request))
-	return
+	h.Set("Access-Control-Allow-Origin", c.originFunc(r))
 }
