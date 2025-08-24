@@ -18,6 +18,7 @@ type Cors struct {
 	handleOptions     bool
 	preflightMaxAge   *time.Duration
 	allowCredentials  *bool
+	allowedMethods    *string
 }
 
 func New() *Cors {
@@ -28,6 +29,7 @@ func New() *Cors {
 		handleOptionsFlag: flag.Bool("cors.intercept-options", true, "return early when processing OPTIONS requests"),
 		preflightMaxAge:   flag.Duration("cors.preflight-max-age", 0*time.Second, "duration a preflight should be cached for. Set to 0s to omit. (Access-Control-Max-Age)"),
 		allowCredentials:  flag.Bool("cors.allow-credentials", false, "allow credentials (Access-Control-Allow-Credentials)"),
+		allowedMethods:    flag.String("cors.allowed-methods", "", "allowed method(s) as a comma-separated list (Access-Control-Allow-Methods)"),
 	}
 }
 
@@ -75,6 +77,11 @@ func (c *Cors) ServeHTTP(rw http.ResponseWriter, req *menhir.Request) {
 		if *c.allowCredentials {
 			rw.Header().Add("Access-Control-Allow-Credentials", "true")
 		}
+
+		if *c.allowedMethods != "" {
+			rw.Header().Add("Access-Control-Allow-Methods", *c.allowedMethods)
+		}
+
 		rw.Header().Add("Access-Control-Allow-Origin", c.originFunc(req.Request))
 		rw.WriteHeader(http.StatusNoContent)
 	}
@@ -84,14 +91,21 @@ func (c *Cors) ModifyResponse(res *http.Response) (err error) {
 	if *c.allowedHeaders != "" {
 		res.Header.Add("Access-Control-Allowed-Headers", *c.allowedHeaders)
 	}
+
 	if *c.exposedHeaders != "" {
 		res.Header.Add("Access-Control-Expose-Headers", *c.exposedHeaders)
 	}
+
 	if *c.preflightMaxAge != 0*time.Second {
 		res.Header.Add("Access-Control-Max-Age", fmt.Sprintf("%.0f", c.preflightMaxAge.Seconds()))
 	}
+
 	if *c.allowCredentials {
 		res.Header.Add("Access-Control-Allow-Credentials", "true")
+	}
+
+	if *c.allowedMethods != "" {
+		res.Header.Add("Access-Control-Allow-Methods", *c.allowedMethods)
 	}
 
 	res.Header.Add("Access-Control-Allow-Origin", c.originFunc(res.Request))
